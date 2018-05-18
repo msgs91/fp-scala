@@ -1,0 +1,59 @@
+buildscript {
+    repositories {
+        jcenter()// only work after gradle 1.7
+    }
+}
+
+allprojects {
+    apply plugin: 'eclipse'
+    apply plugin: 'idea'
+    apply plugin: 'java'
+
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    configurations {
+        scalaCompilerPlugin
+    }
+
+
+    dependencies {
+        compile "org.scala-lang:scala-library:$SCALA_VERSION"
+        scalaCompilerPlugin group: 'org.scalamacros', name: 'paradise_2.12.4', version: '2.1.1'
+
+        compile group: 'com.github.mpilquist', name: 'simulacrum_2.12', version: '0.12.0'
+    }
+
+    tasks.withType(ScalaCompile) {
+        scalaCompileOptions.additionalParameters = [
+                "-feature", "-target:jvm-1.8",
+                "-language:postfixOps",
+                "-language:higherKinds",
+                "-language:implicitConversions",
+                "-language:reflectiveCalls",
+                "-language:implicitConversions",
+                "-Xplugin:" + configurations.scalaCompilerPlugin.asPath
+        ]
+    }
+}
+
+
+subprojects {
+
+    apply plugin: 'scala'
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    version = System.getProperty('buildVersion', 'local') + "-" + System.getProperty('buildNumber', 'local')
+    jar {
+        manifest.attributes provider: 'gradle'
+    }
+}
